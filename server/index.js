@@ -9,7 +9,13 @@ dotenv.config();
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
 
-app.use(cors());
+app.use(cors({
+    origin: [
+      "http://localhost:5173",
+      "https://ai-receipt-inky.vercel.app/"
+    ],
+  })
+);
 app.use(express.json());
 
 const ai = new GoogleGenAI({

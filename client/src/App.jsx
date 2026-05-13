@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import "./App.css";
 
@@ -9,7 +9,13 @@ function App() {
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("receipts")) || [];
+    } catch {
+      return [];
+    }
+  });
 
   const [formData, setFormData] = useState({
     merchant_name: "",
@@ -17,11 +23,6 @@ function App() {
     total_amount: "",
     currency: "",
   });
-
-  useEffect(() => {
-    const savedReceipts = JSON.parse(localStorage.getItem("receipts")) || [];
-    setHistory(savedReceipts);
-  }, []);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
