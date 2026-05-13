@@ -28,7 +28,6 @@ app.use(
   })
 );
 
-app.options("*", cors());
 app.use(express.json());
 
 const ai = new GoogleGenAI({
