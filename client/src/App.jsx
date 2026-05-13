@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
 
@@ -9,6 +9,8 @@ function App() {
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [history, setHistory] = useState([]);
+
   const [formData, setFormData] = useState({
     merchant_name: "",
     date: "",
@@ -16,15 +18,27 @@ function App() {
     currency: "",
   });
 
+  useEffect(() => {
+    const savedReceipts = JSON.parse(localStorage.getItem("receipts")) || [];
+    setHistory(savedReceipts);
+  }, []);
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setImage(file);
     setSubmitted(false);
-    if (file) setPreview(URL.createObjectURL(file));
+
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+    }
   };
 
   const extractReceipt = async () => {
-    if (!image) return alert("Please upload a receipt image first.");
+    if (!image) {
+      alert("Please upload a receipt image first.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -42,25 +56,41 @@ function App() {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const savedReceipts = JSON.parse(localStorage.getItem("receipts")) || [];
-    savedReceipts.push({ ...formData, submitted_at: new Date().toISOString() });
-    localStorage.setItem("receipts", JSON.stringify(savedReceipts));
+
+    const newReceipt = {
+      ...formData,
+      submitted_at: new Date().toLocaleString(),
+    };
+
+    const updatedHistory = [newReceipt, ...history];
+
+    localStorage.setItem("receipts", JSON.stringify(updatedHistory));
+    setHistory(updatedHistory);
     setSubmitted(true);
+  };
+
+  const clearHistory = () => {
+    localStorage.removeItem("receipts");
+    setHistory([]);
   };
 
   return (
     <main className="page">
       <section className="hero">
-        <span className="badge">AI Intern Assessment</span>
-        <h1>Receipt-to-Form Auto-Fill</h1>
+        <span className="badge">✨ Powered by Gemini AI</span>
+
+        <h1>AI Receipt Intelligence</h1>
+
         <p>
-          Upload a receipt image and use Gemini AI to extract merchant name,
-          date, total amount and currency into an editable form.
+          Extract structured receipt data instantly using Gemini Vision AI.
         </p>
       </section>
 
@@ -140,6 +170,66 @@ function App() {
             </div>
           )}
         </div>
+      </section>
+
+      <section className="history-section">
+        <div className="history-header">
+          <div>
+            <h2>Recent Submissions</h2>
+            <p>Submitted receipt records saved locally in your browser.</p>
+          </div>
+
+          {history.length > 0 && (
+            <button className="clear-btn" onClick={clearHistory}>
+              Clear History
+            </button>
+          )}
+        </div>
+
+        {history.length === 0 ? (
+          <div className="empty-history">
+            No submitted receipts yet.
+          </div>
+        ) : (
+          <div className="history-grid">
+            {history.map((item, index) => (
+              <div className="history-modern-card" key={index}>
+                <div className="history-top">
+                  <div className="merchant-avatar">
+                    {item.merchant_name
+                      ? item.merchant_name.charAt(0).toUpperCase()
+                      : "R"}
+                  </div>
+
+                  <div className="merchant-info">
+                    <h3>{item.merchant_name || "Unknown Merchant"}</h3>
+
+                    <p>{item.submitted_at}</p>
+                  </div>
+                </div>
+
+                <div className="history-divider"></div>
+
+                <div className="history-bottom">
+                  <div className="history-stat">
+                    <span>Currency</span>
+                    <strong>{item.currency || "N/A"}</strong>
+                  </div>
+
+                  <div className="history-stat">
+                    <span>Total</span>
+                    <strong>{item.total_amount || "0.00"}</strong>
+                  </div>
+
+                  <div className="history-stat">
+                    <span>Date</span>
+                    <strong>{item.date || "N/A"}</strong>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );
