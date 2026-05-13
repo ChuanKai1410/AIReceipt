@@ -43,7 +43,7 @@ https://ai-receipt-inky.vercel.app/
 
 ## AI Model Used
 
-* Gemini 2.0 Flash
+* Gemini 3.0 Flash
 
 ---
 
