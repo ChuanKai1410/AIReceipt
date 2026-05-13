@@ -9,6 +9,7 @@ function App() {
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [notification, setNotification] = useState("");
   const [history, setHistory] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("receipts")) || [];
@@ -48,6 +49,11 @@ function App() {
 
       const res = await axios.post(`${API_URL}/api/extract-receipt`, data);
       setFormData(res.data);
+      setNotification("Receipt extracted successfully.");
+
+      setTimeout(() => {
+        setNotification("");
+      }, 3000);
     } catch (error) {
       alert("Failed to extract receipt data.");
       console.error(error);
@@ -76,6 +82,11 @@ function App() {
     localStorage.setItem("receipts", JSON.stringify(updatedHistory));
     setHistory(updatedHistory);
     setSubmitted(true);
+    setNotification("Receipt submitted successfully.");
+
+    setTimeout(() => {
+      setNotification("");
+    }, 3000);
   };
 
   const clearHistory = () => {
@@ -85,6 +96,16 @@ function App() {
 
   return (
     <main className="page">
+      {notification && (
+        <div className="toast-notification">
+          <div className="toast-icon">✓</div>
+
+          <div>
+            <strong>Success</strong>
+            <p>{notification}</p>
+          </div>
+        </div>
+      )}
       <section className="hero">
         <span className="badge">✨ Powered by Gemini AI</span>
 
