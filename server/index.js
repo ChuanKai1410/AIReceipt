@@ -9,17 +9,34 @@ dotenv.config();
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
 
-app.use(cors({
-    origin: [
-      "http://localhost:5173",
-      "https://ai-receipt-inky.vercel.app/"
-    ],
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://ai-receipt-inky.vercel.app",
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
   })
 );
+
+app.options("*", cors());
 app.use(express.json());
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
+});
+
+app.get("/", (req, res) => {
+  res.send("AI Receipt backend is running");
 });
 
 app.post("/api/extract-receipt", upload.single("receipt"), async (req, res) => {
