@@ -7,11 +7,14 @@ AI Receipt Intelligence is a simple web application that extracts structured rec
 Vercel Deployment:
 https://ai-receipt-inky.vercel.app/
 
+---
+
 ## Features
 
 * Upload receipt image
 * AI-powered receipt understanding using Gemini
 * Auto-fill editable form
+* Intelligent currency inference using receipt context
 * Extract:
 
   * Merchant name
@@ -40,7 +43,7 @@ https://ai-receipt-inky.vercel.app/
 
 ## AI Model Used
 
-* Gemini 3.0 Flash
+* Gemini 2.0 Flash
 
 ---
 
@@ -59,10 +62,21 @@ Return ONLY valid JSON with this exact structure:
 }
 
 Rules:
-- Use ISO date format if possible: YYYY-MM-DD
-- Currency should be MYR, USD, SGD, etc.
-- If a field is missing, return an empty string
-- Do not include explanation or markdown
+- Extract merchant name, receipt date, total payable amount and currency.
+- Infer the currency based on the receipt address, country, merchant location, phone number prefix or visible currency symbols if necessary.
+- For Malaysia use MYR.
+- For Singapore use SGD.
+- For United States use USD.
+- For United Kingdom use GBP.
+- For Eurozone countries use EUR.
+- For Japan use JPY.
+- For Thailand use THB.
+- For Indonesia use IDR.
+- For Taiwan use TWD.
+- Use ISO date format if possible: YYYY-MM-DD.
+- Total amount should be the final payable amount.
+- If a field is missing, return an empty string.
+- Do not include explanation or markdown outside the JSON.
 ```
 
 ---
@@ -112,6 +126,5 @@ npm run dev
 
 ## Deployment
 
-Frontend deployed using Vercel.
-
-Backend deployed using Render.
+* Frontend deployed using Vercel
+* Backend deployed using Render
