@@ -2,6 +2,11 @@
 
 AI Receipt Intelligence is a simple web application that extracts structured receipt information using Gemini Vision AI and auto-fills an editable form for user review.
 
+## Live Demo
+
+Vercel Deployment:
+https://ai-receipt-inky.vercel.app/
+
 ## Features
 
 * Upload receipt image
