@@ -1,122 +1,143 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
+import axios from "axios";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const [formData, setFormData] = useState({
+    merchant_name: "",
+    date: "",
+    total_amount: "",
+    currency: "",
+  });
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setImage(file);
+    setSubmitted(false);
+
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const extractReceipt = async () => {
+    if (!image) {
+      alert("Please upload a receipt image first.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const data = new FormData();
+      data.append("receipt", image);
+
+      const res = await axios.post(
+        "http://localhost:5000/api/extract-receipt",
+        data
+      );
+
+      setFormData(res.data);
+    } catch (error) {
+      alert("Failed to extract receipt data.");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const savedReceipts = JSON.parse(localStorage.getItem("receipts")) || [];
+    savedReceipts.push(formData);
+    localStorage.setItem("receipts", JSON.stringify(savedReceipts));
+
+    setSubmitted(true);
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <main className="container">
+      <section className="card">
+        <h1>AI Receipt Auto-Fill</h1>
+        <p className="subtitle">
+          Upload a receipt image and let AI extract the key details.
+        </p>
+
+        <div className="upload-box">
+          <input type="file" accept="image/*" onChange={handleImageChange} />
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
+
+        {preview && (
+          <img src={preview} alt="Receipt preview" className="preview" />
+        )}
+
+        <button onClick={extractReceipt} disabled={loading}>
+          {loading ? "Extracting..." : "Extract Receipt Data"}
         </button>
+
+        <form onSubmit={handleSubmit} className="form">
+          <label>
+            Merchant Name
+            <input
+              name="merchant_name"
+              value={formData.merchant_name}
+              onChange={handleChange}
+            />
+          </label>
+
+          <label>
+            Date
+            <input
+              name="date"
+              value={formData.date}
+              onChange={handleChange}
+            />
+          </label>
+
+          <label>
+            Total Amount
+            <input
+              name="total_amount"
+              value={formData.total_amount}
+              onChange={handleChange}
+            />
+          </label>
+
+          <label>
+            Currency
+            <input
+              name="currency"
+              value={formData.currency}
+              onChange={handleChange}
+            />
+          </label>
+
+          <button type="submit" className="submit-btn">
+            Submit
+          </button>
+        </form>
+
+        {submitted && (
+          <p className="success">
+            Receipt data submitted and saved locally.
+          </p>
+        )}
       </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    </main>
+  );
 }
 
-export default App
+export default App;
